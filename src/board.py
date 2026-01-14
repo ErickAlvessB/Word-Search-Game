@@ -6,31 +6,58 @@ class Board:
         self.size = size
         self.words = [word.upper() for word in words]
         self.board = [['' for _ in range(size)] for _ in range(size)]
-        
+        self.DIRECTIONS = [(0, 1), (1, 0), (1, 1), (-1, 1)]
         self.generate_board()
-
+    
     def generate_board(self):
         for word in self.words:
-            self.place_word(word)
-    
+            placed = self.place_word(word)
+            if not placed:
+                print(f"Aviso: não foi possível colocar a palavra '{word}'")
         self.fill_empty_spaces()
-
+    
     def place_word(self, word):
-        row = random.randint(0, self.size - 1)
-
-        if(len(word) > self.size):
-            return
-        
-        col = random.randint(0, self.size - len(word))
-
-        for i, letter in enumerate(word):
-            self.board[row][col + i] = letter
-        
+        direction = random.choice(self.DIRECTIONS)
+        dx, dy = direction
+        for _ in range(100):
+            row = random.randint(0, self.size - 1)
+            col = random.randint(0, self.size - 1)
+            if self._can_place(word, row, col, dx, dy):
+                self._write_word(word, row, col, dx, dy)
+                return True
+        return False
+    
     def fill_empty_spaces(self):
         for i in range(self.size):
             for j in range(self.size):
                 if self.board[i][j] == '':
-                    self.board[i][j] = random.choice(random.choice(string.ascii_uppercase))
+                    self.board[i][j] = random.choice(string.ascii_uppercase)
+    
+    def _can_place(self, word, row, col, dx, dy):
+        for i in range(len(word)):
+            r = row + i * dx
+            c = col + i * dy
+            if r < 0 or r >= self.size or c < 0 or c >= self.size:
+                return False
+            if self.board[r][c] not in ('', word[i]):
+                return False
+        return True
+
+        return True
+    def _write_word(self, word, row, col, dx, dy):
+        for i in range(len(word)):
+            r = row + i * dx
+            c = col + i * dy
+            self.board[r][c] = word[i]
+
+    def word_exists(self, word):
+        for row in range(self.size):
+            for col in range(self.size):
+                for dx, dy in self.DIRECTIONS:
+                    if self._check_direction(word, row, col, dx, dy):
+                        return True, row, col, dx, dy
+        return False, None, None, None, None
+
 
     def display_board(self):
         print("\nTabuleiro:")
@@ -60,3 +87,22 @@ class Board:
             print()
 
         print()
+    
+    def _search_from(self, word, row, col):
+        for dx, dy in self.DIRECTIONS:
+            if self._check_direction(word, row, col, dx, dy):
+                return True
+        return False
+    
+    def _check_direction(self, word, row, col, dx, dy):
+        for i in range(len(word)):
+            r = row + i * dx
+            c = col + i * dy
+
+            if r < 0 or r >= self.size or c < 0 or c >= self.size:
+                return False
+
+            if self.board[r][c] != word[i]:
+                return False
+
+        return True
