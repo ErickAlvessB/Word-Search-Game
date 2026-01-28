@@ -1,9 +1,22 @@
 import random
 import string
 
+ANSI_COLORS = [
+    "\033[91m",  # vermelho
+    "\033[92m",  # verde
+    "\033[93m",  # amarelo
+    "\033[94m",  # azul
+    "\033[95m",  # magenta
+    "\033[96m",  # ciano
+]
+
+RESET = "\033[0m"
+
+
 class Board:
     def __init__(self, size, words):
         self.size = size
+        self.found_words = [];
         self.words = [word.upper() for word in words]
         self.board = [['' for _ in range(size)] for _ in range(size)]
         self.DIRECTIONS = [(0, 1), (1, 0), (1, 1), (-1, 1)]
@@ -43,7 +56,6 @@ class Board:
                 return False
         return True
 
-        return True
     def _write_word(self, word, row, col, dx, dy):
         for i in range(len(word)):
             r = row + i * dx
@@ -82,11 +94,43 @@ class Board:
         for i in range(self.size):
             print(f"{i} |", end=" ")
             for j in range(self.size):
-                cell = self.board[i][j] if self.board[i][j] else '.'
-                print(f"{cell:2}", end=" ")
-            print()
+                cell = self.board[i][j]
 
+                color = None
+                for word in self.found_words:
+                    if (i, j) in word["positions"]:
+                        color = word["color"]
+                        break
+
+                if color:
+                    print(f"{color}{cell}{RESET}  ", end="")
+                else:
+                    print(f"{cell}  ", end="")
+
+            print()
         print()
+        print()
+
+    def try_register_word(self, word):
+        found, row, col, dx, dy = self.word_exists(word)
+        if not found:
+            return False
+
+        color = ANSI_COLORS[len(self.found_words) % len(ANSI_COLORS)]
+        positions = set()
+
+        for i in range(len(word)):
+            r = row + i * dx
+            c = col + i * dy
+            positions.add((r, c))
+
+        self.found_words.append({
+            "positions": positions,
+            "color": color
+        })
+
+        return True
+
     
     def _search_from(self, word, row, col):
         for dx, dy in self.DIRECTIONS:
@@ -106,3 +150,8 @@ class Board:
                 return False
 
         return True
+    def all_words_found(self):
+        if(len(self.found_words) == len(self.words)):
+           return True;
+    
+        return False;
