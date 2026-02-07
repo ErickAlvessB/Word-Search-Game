@@ -30,8 +30,7 @@ class Game:
     def run(self):
         while not self.game_board.all_words_found():
             os.system('cls' if os.name == 'nt' else 'clear') # Clear terminal
-            self.game_display.display_board()
-            self.game_display.display_word_list()
+            self.game_display._display_game_layout()
 
             guess = input("Digite as coordenadas de início e fim (ex: A1 G1) ou 'sair': ").upper()
             if guess == "SAIR":
