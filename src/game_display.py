@@ -27,13 +27,13 @@ class GameDisplay:
         self._print_rows()
 
     def _print_column_headers(self):
-        print("   ", end="")
+        print("    ", end="") # 4 spaces to align with "XX |" for row numbers
         for j in range(self.game_board.size):
-            print(f"{string.ascii_uppercase[j]:2}", end=" ")
+            print(f" {string.ascii_uppercase[j]} ", end="") # Letter with 1 space before and 1 after
         print()
 
     def _print_separator(self):
-        print("   " + "-" * (self.game_board.size * 3))
+        print("   " + "---" * self.game_board.size) # 3 dashes per column
 
     def display_word_list(self):
         print("Palavras a encontrar:")
@@ -50,7 +50,7 @@ class GameDisplay:
 
     def _print_rows(self):
         for i in range(self.game_board.size):
-            print(f"{i} |", end=" ")
+            print(f"{i:2} |", end="") # Row number (2 chars) and separator (|)
             for j in range(self.game_board.size):
                 cell = self.game_board.board[i][j]
 
@@ -61,9 +61,9 @@ class GameDisplay:
                         break
 
                 if color_to_apply:
-                    print(f"{color_to_apply}{cell}{RESET}  ", end="")
+                    print(f"{color_to_apply} {cell} {RESET}", end="") # Letter with 1 space before and 1 after
                 else:
-                    print(f"{cell}  ", end="")
+                    print(f" {cell} ", end="") # Letter with 1 space before and 1 after
 
             print()
         print()

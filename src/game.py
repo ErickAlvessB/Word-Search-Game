@@ -1,4 +1,5 @@
 import string
+import os
 from game_board import GameBoard
 from game_display import GameDisplay
 
@@ -28,6 +29,7 @@ class Game:
 
     def run(self):
         while not self.game_board.all_words_found():
+            os.system('cls' if os.name == 'nt' else 'clear') # Clear terminal
             self.game_display.display_board()
             self.game_display.display_word_list()
 
