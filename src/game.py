@@ -59,6 +59,8 @@ class Game:
                 self.game_display.display_message("Essa palavra já foi encontrada.")
             elif result == "FOUND":
                 self.game_display.display_message("Palavra encontrada!")
+        
+        self.game_display.display_all_words() # Display all words when game ends
 
         self.game_display.display_message("Você chegou ao final do jogo!!!")
 

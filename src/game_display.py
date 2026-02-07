@@ -1,4 +1,5 @@
 import string
+import os
 from game_board import GameBoard
 
 ANSI_COLORS = [
@@ -109,3 +110,37 @@ class GameDisplay:
                     row_str += f" {cell} " # Letter with 1 space before and 1 after
             rows.append(row_str)
         return rows
+
+    def display_all_words(self):
+        os.system('cls' if os.name == 'nt' else 'clear') # Clear terminal
+
+        all_words_data = self.game_board.get_all_word_positions()
+        
+        lines = []
+        lines.append("Tabuleiro com todas as palavras:")
+        lines.append(self._get_column_headers_line())
+        lines.append(self._get_separator_line())
+
+        for i in range(self.game_board.size):
+            row_str = f"{i:2} |"
+            for j in range(self.game_board.size):
+                cell = self.game_board.board[i][j]
+                
+                color_to_apply = None
+                # Check against all_words_data to highlight
+                for idx, word_data in enumerate(all_words_data):
+                    if (i, j) in word_data["positions"]:
+                        color_to_apply = ANSI_COLORS[idx % len(ANSI_COLORS)]
+                        break
+                
+                if color_to_apply:
+                    row_str += f"{color_to_apply} {cell} {RESET}"
+                else:
+                    row_str += f" {cell} "
+            lines.append(row_str)
+        
+        print('\n'.join(lines))
+        print("\nPalavras no tabuleiro:")
+        for word_info in all_words_data:
+            print(f"- {word_info['word']}")
+        print("\n")

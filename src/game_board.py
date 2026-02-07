@@ -8,6 +8,7 @@ class GameBoard:
         self.words = [word.upper() for word in words]
         self.board = [['' for _ in range(size)] for _ in range(size)]
         self.DIRECTIONS = [(0, 1), (1, 0), (1, 1), (-1, 1)]
+        self.all_word_info = [] # Stores info about all placed words: {"word": str, "start_coord": (r, c), "end_coord": (r, c), "direction": (dx, dy)}
         self.generate_board()
     
     def generate_board(self):
@@ -22,15 +23,44 @@ class GameBoard:
         self.fill_empty_spaces()
     
     def place_word(self, word):
-        direction = random.choice(self.DIRECTIONS)
-        dx, dy = direction
         for _ in range(100):
-            row = random.randint(0, self.size - 1)
-            col = random.randint(0, self.size - 1)
-            if self._can_place(word, row, col, dx, dy):
-                self._write_word(word, row, col, dx, dy)
-                return True
+            direction = random.choice(self.DIRECTIONS)
+            dx, dy = direction
+            for r_start in range(self.size):
+                for c_start in range(self.size):
+                    if self._can_place(word, r_start, c_start, dx, dy):
+                        self._write_word(word, r_start, c_start, dx, dy)
+                        
+                        end_r = r_start + (len(word) - 1) * dx
+                        end_c = c_start + (len(word) - 1) * dy
+
+                        self.all_word_info.append({
+                            "word": word,
+                            "start_coord": (r_start, c_start),
+                            "end_coord": (end_r, end_c),
+                            "direction": direction
+                        })
+                        return True
         return False
+    
+    def get_all_word_positions(self):
+        all_positions_data = []
+        for word_info in self.all_word_info:
+            word_str = word_info["word"]
+            start_r, start_c = word_info["start_coord"]
+            dx, dy = word_info["direction"]
+            
+            positions_set = set()
+            for i in range(len(word_str)):
+                r = start_r + i * dx
+                c = start_c + i * dy
+                positions_set.add((r, c))
+            
+            all_positions_data.append({
+                "word": word_str,
+                "positions": positions_set
+            })
+        return all_positions_data
     
     def fill_empty_spaces(self):
         for i in range(self.size):
