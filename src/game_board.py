@@ -54,61 +54,87 @@ class GameBoard:
             c = col + i * dy
             self.board[r][c] = word[i]
 
-    def word_exists(self, word):
-        for row in range(self.size):
-            for col in range(self.size):
-                for dx, dy in self.DIRECTIONS:
-                    if self._check_direction(word, row, col, dx, dy):
-                        return True, row, col, dx, dy
-        return False, None, None, None, None
+    def get_word_from_coords(self, start_coord, end_coord):
+        (r1, c1) = start_coord
+        (r2, c2) = end_coord
 
-    def try_register_word(self, word):
-        if word not in self.words:
-            return "INVALID"
+        # Horizontal
+        if r1 == r2:
+            if c1 > c2: c1, c2 = c2, c1 # Swap to read left-to-right
+            return "".join(self.board[r1][c] for c in range(c1, c2 + 1))
+        # Vertical
+        elif c1 == c2:
+            if r1 > r2: r1, r2 = r2, r1 # Swap to read top-to-bottom
+            return "".join(self.board[r][c1] for r in range(r1, r2 + 1))
+        # Diagonal
+        elif abs(r1 - r2) == abs(c1 - c2):
+            if r1 > r2: # Ensure we read from top-left to bottom-right or top-right to bottom-left
+                r1, r2 = r2, r1
+                c1, c2 = c2, c1
+            
+            dr = 1 if r2 > r1 else -1
+            dc = 1 if c2 > c1 else -1
+            
+            word = []
+            r, c = r1, c1
+            while r != r2 + dr and c != c2 + dc:
+                word.append(self.board[r][c])
+                r += dr
+                c += dc
+            return "".join(word)
+        else:
+            return None
+
+    def validate_and_register_word(self, start_coord, end_coord):
+        word = self.get_word_from_coords(start_coord, end_coord)
+
+        if not word:
+            return "INVALID_SELECTION"
+
+        # Check both the word and its reverse
+        reversed_word = word[::-1]
+        
+        is_word_in_list = word in self.words
+        is_reversed_in_list = reversed_word in self.words
+        
+        if not is_word_in_list and not is_reversed_in_list:
+            return "NOT_A_WORD"
+
+        actual_word = word if is_word_in_list else reversed_word
 
         for found_word_data in self.found_words:
-            if word == found_word_data["word"]:
+            if actual_word == found_word_data["word"]:
                 return "ALREADY_FOUND"
-
-        found, row, col, dx, dy = self.word_exists(word)
-        if not found:
-            return False
-
+        
+        # Get positions
         positions = set()
-        for i in range(len(word)):
-            r = row + i * dx
-            c = col + i * dy
-            positions.add((r, c))
+        (r1, c1) = start_coord
+        (r2, c2) = end_coord
+        
+        if r1 == r2: # Horizontal
+            for c in range(min(c1, c2), max(c1, c2) + 1):
+                positions.add((r1, c))
+        elif c1 == c2: # Vertical
+            for r in range(min(r1, r2), max(r1, r2) + 1):
+                positions.add((r, c1))
+        else: # Diagonal
+            dr = 1 if r2 > r1 else -1
+            dc = 1 if c2 > c1 else -1
+            r, c = r1, c1
+            while True:
+                positions.add((r,c))
+                if r == r2 and c == c2:
+                    break
+                r += dr
+                c += dc
 
         self.found_words.append({
-            "word": word,
+            "word": actual_word,
             "positions": positions,
-            "color": None # Color is handled by GameDisplay
+            "color": None 
         })
 
         return "FOUND"
 
-    
-    def _search_from(self, word, row, col):
-        for dx, dy in self.DIRECTIONS:
-            if self._check_direction(word, row, col, dx, dy):
-                return True
-        return False
-    
-    def _check_direction(self, word, row, col, dx, dy):
-        for i in range(len(word)):
-            r = row + i * dx
-            c = col + i * dy
-
-            if r < 0 or r >= self.size or c < 0 or c >= self.size:
-                return False
-
-            if self.board[r][c] != word[i]:
-                return False
-
-        return True
     def all_words_found(self):
-        if(len(self.found_words) == len(self.words)):
-           return True;
-    
-        return False;
+        return len(self.found_words) == len(self.words)

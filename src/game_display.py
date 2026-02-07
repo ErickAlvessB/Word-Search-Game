@@ -1,3 +1,4 @@
+import string
 from game_board import GameBoard
 
 ANSI_COLORS = [
@@ -28,11 +29,24 @@ class GameDisplay:
     def _print_column_headers(self):
         print("   ", end="")
         for j in range(self.game_board.size):
-            print(f"{j:2}", end=" ")
+            print(f"{string.ascii_uppercase[j]:2}", end=" ")
         print()
 
     def _print_separator(self):
         print("   " + "-" * (self.game_board.size * 3))
+
+    def display_word_list(self):
+        print("Palavras a encontrar:")
+        found_words_list = [fw["word"] for fw in self.game_board.found_words]
+        for word in self.game_board.words:
+            if word in found_words_list:
+                print(f'{word} (encontrada)')
+            else:
+                print(word)
+        print()
+
+    def display_message(self, message):
+        print(message)
 
     def _print_rows(self):
         for i in range(self.game_board.size):
